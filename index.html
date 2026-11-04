@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DTI Thermal Protection Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #edf2f7;
+    color: #172033;
+}
+
+header {
+    background: #10243e;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.container {
+    padding: 20px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.status {
+    padding: 12px;
+    border-radius: 8px;
+    background: #fee2e2;
+    color: #b91c1c;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.online {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0001;
+}
+
+.card h3 {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.value {
+    font-size: 30px;
+    color: #1479d0;
+    font-weight: bold;
+}
+
+.panel {
+    background: white;
+    padding: 20px;
+    margin-top: 22px;
+    border-radius: 12px;
+}
+
+.device {
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #64748b;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>DTI THERMAL PROTECTION SYSTEM</h1>
+    <p>Smart Electronic Equipment Monitoring</p>
+</header>
+
+<div class="container">
+
+    <h2>Live Monitoring</h2>
+
+    <div id="connection" class="status">
+        DISCONNECTED
+    </div>
+
+    <h2>Temperature Monitoring</h2>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Inside Temperature</h3>
+            <div class="value" id="insideTemp">-- °C</div>
+        </div>
+
+        <div class="card">
+            <h3>Outside Temperature</h3>
+            <div class="value" id="outsideTemp">-- °C</div>
+        </div>
+
+        <div class="card">
+            <h3>Humidity</h3>
+            <div class="value" id="humidity">-- %</div>
+        </div>
+
+        <div class="card">
+            <h3>Atmospheric Pressure</h3>
+            <div class="value" id="pressure">-- hPa</div>
+        </div>
+
+    </div>
+
+    <h2>Electrical Monitoring</h2>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Voltage</h3>
+            <div class="value" id="voltage">-- V</div>
+        </div>
+
+        <div class="card">
+            <h3>Current</h3>
+            <div class="value" id="current">-- mA</div>
+        </div>
+
+    </div>
+
+    <h2>Thermal Protection Status</h2>
+
+    <div class="panel">
+
+        <div class="device">
+            <b>Heater</b>
+            <span id="heater">--</span>
+        </div>
+
+        <div class="device">
+            <b>Cooling Fan</b>
+            <span id="fan">--</span>
+        </div>
+
+        <div class="device">
+            <b>ESP32 Status</b>
+            <span id="espStatus">Disconnected</span>
+        </div>
+
+        <div class="device">
+            <b>Last Update</b>
+            <span id="lastUpdate">Waiting...</span>
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    DTI Project | Real-Time Sensor Monitoring
+</footer>
+
+<script>
+
+function display(id, value, unit) {
+    document.getElementById(id).textContent =
+        value === null || value === undefined
+        ? "-- " + unit
+        : value + " " + unit;
+}
+
+async function updateDashboard() {
+
+    try {
+
+        const response = await fetch("/api/data");
+        const data = await response.json();
+
+        display("insideTemp", data.inside_temp, "°C");
+        display("outsideTemp", data.outside_temp, "°C");
+        display("humidity", data.humidity, "%");
+        display("pressure", data.pressure, "hPa");
+        display("voltage", data.voltage, "V");
+        display("current", data.current, "mA");
+
+        document.getElementById("heater").textContent =
+            data.heater === true ? "ON" :
+            data.heater === false ? "OFF" : "--";
+
+        document.getElementById("fan").textContent =
+            data.fan === true ? "ON" :
+            data.fan === false ? "OFF" : "--";
+
+        document.getElementById("espStatus").textContent =
+            data.connected ? "Connected" : "Disconnected";
+
+        document.getElementById("lastUpdate").textContent =
+            data.last_update || "Waiting...";
+
+        const connection =
+            document.getElementById("connection");
+
+        connection.textContent =
+            data.connected ? "CONNECTED" : "DISCONNECTED";
+
+        connection.className = data.connected
+            ? "status online"
+            : "status";
+
+    } catch (error) {
+
+        document.getElementById("connection").textContent =
+            "SERVER ERROR";
+
+    }
+}
+
+updateDashboard();
+setInterval(updateDashboard, 1000);
+
+</script>
+
+</body>
+</html>
