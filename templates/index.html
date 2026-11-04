@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTI Thermal Protection Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            color: #38bdf8;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #b8c4d6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 22px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .card h3 {
+            color: #93c5fd;
+        }
+
+        .value {
+            font-size: 27px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        #espStatus {
+            color: #f87171;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>DTI Thermal Protection System</h1>
+    <p class="subtitle">Real-Time Monitoring Dashboard</p>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Inside Temperature</h3>
+            <div class="value" id="insideTemp">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Outside Temperature</h3>
+            <div class="value" id="outsideTemp">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Humidity</h3>
+            <div class="value" id="humidity">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Pressure</h3>
+            <div class="value" id="pressure">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Voltage</h3>
+            <div class="value" id="voltage">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Current</h3>
+            <div class="value" id="current">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Heater Status</h3>
+            <div class="value" id="heater">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Fan Status</h3>
+            <div class="value" id="fan">--</div>
+        </div>
+
+        <div class="card">
+            <h3>ESP32 Connection</h3>
+            <div class="value" id="espStatus">Disconnected</div>
+        </div>
+
+    </div>
+
+    <footer>
+        Last Update: <span id="lastUpdate">Waiting...</span>
+    </footer>
+
+    <script>
+        async function updateDashboard() {
+            try {
+                const response = await fetch("/api/data");
+
+                if (!response.ok) {
+                    throw new Error("Could not get dashboard data");
+                }
+
+                const data = await response.json();
+
+                document.getElementById("insideTemp").textContent =
+                    data.inside_temp ?? "--";
+
+                document.getElementById("outsideTemp").textContent =
+                    data.outside_temp ?? "--";
+
+                document.getElementById("humidity").textContent =
+                    data.humidity ?? "--";
+
+                document.getElementById("pressure").textContent =
+                    data.pressure ?? "--";
+
+                document.getElementById("voltage").textContent =
+                    data.voltage ?? "--";
+
+                document.getElementById("current").textContent =
+                    data.current ?? "--";
+
+                document.getElementById("heater").textContent =
+                    data.heater ?? "--";
+
+                document.getElementById("fan").textContent =
+                    data.fan ?? "--";
+
+                document.getElementById("espStatus").textContent =
+                    data.connected ? "Connected" : "Disconnected";
+
+                document.getElementById("espStatus").style.color =
+                    data.connected ? "#4ade80" : "#f87171";
+
+                document.getElementById("lastUpdate").textContent =
+                    data.last_update ?? "--";
+
+            } catch (error) {
+                document.getElementById("espStatus").textContent =
+                    "Connection Error";
+            }
+        }
+
+        updateDashboard();
+        setInterval(updateDashboard, 2000);
+    </script>
+
+</body>
+</html>
