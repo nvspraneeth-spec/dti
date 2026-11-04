@@ -2,12 +2,7 @@ from flask import Flask, render_template, jsonify
 from datetime import datetime
 import os
 
-folder = os.path.dirname(os.path.abspath(__file__))
-
-app = Flask(
-    __name__,
-    template_folder=os.path.join(folder, "templates")
-)
+app = Flask(__name__)
 
 @app.route("/")
 def home():
@@ -29,4 +24,4 @@ def get_data():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run()
